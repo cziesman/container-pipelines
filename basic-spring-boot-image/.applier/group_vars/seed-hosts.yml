@@ -20,8 +20,8 @@ sb_src_registry: "docker://docker-registry.default.svc.cluster.local:5000"
 sb_dest_registry: "docker://10.128.88.25"
 sb_src_project: "basic-spring-boot-image"
 sb_dest_project: "productionpipeline"
-sb_mvn_snapshot_deployment_repository: "nexus::default::http://nexus:8081/repository/maven-snapshots"
-sb_mvn_release_deployment_repository: "nexus::default::http://nexus:8081/repository/maven-releases"
+sb_mvn_snapshot_deployment_repository: "nexus::default::https://jenkins-cableone-ci-cd.apps.uat.corp.cableone.net/repository/maven-snapshots"
+sb_mvn_release_deployment_repository: "nexus::default::https://jenkins-cableone-ci-cd.apps.uat.corp.cableone.net/repository/maven-releases"
 
 openshift_cluster_content:
 - object: projects
