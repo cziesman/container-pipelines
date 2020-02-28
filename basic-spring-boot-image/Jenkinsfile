@@ -31,7 +31,7 @@ pipeline {
   // After Pipeline completes the Pod is killed so every run will have clean
   // workspace
   agent {
-    label 'skopeo'
+    label 'jenkins-slave-mvn'
   }
 
   // Pipeline Stages start here
@@ -49,27 +49,44 @@ pipeline {
       }
     }
 
-    // Run Maven build, skipping tests
-    stage('Build'){
+    // Run Maven build, tests, coverage, and dependency checks
+    stage('Build, Unit Test, Dependency Scan'){
       steps {
-        sh "mvn -B clean install -DskipTests=true -f ${POM_FILE} -DaltDeploymentRepository=${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY}"
+
+        // run build
+        sh "mvn -B clean deploy -f ${POM_FILE} -DaltDeploymentRepository=${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY}"
+
+        // publish unit test report
+        publishHTML(target: [
+          reportDir            : "${env.BUILD_OUTPUT_DIR}/site/jacoco",
+          reportFiles          : 'index.html',
+          reportName           : 'Jacoco Unit Test Report',
+          keepAll              : true,
+          alwaysLinkToLastBuild: false,
+          allowMissing         : true
+        ])
+
+        // publish dependency check report
+        publishHTML(target: [
+          reportDir            : "${env.BUILD_OUTPUT_DIR}",
+          reportFiles          : 'dependency-check-report.html',
+          reportName           : 'OWASP Dependency Check Report',
+          keepAll              : true,
+          alwaysLinkToLastBuild: true,
+          allowMissing         : false
+        ])
       }
     }
 
-    // Run Maven unit tests
-    stage('Unit Test'){
+    // Perform Static Code Analysis using SonarQube
+    stage ('Code Analysis') {
       steps {
-        sh "mvn -B test -f ${POM_FILE}"
+        sonarqubeStaticAnalysis(
+          pomFile: "${POM_FILE}",
+          buildServerWebHookName: "jenkins"
+        )
       }
     }
-
-//    stage ('Static Analysis') {
-//      steps {
-//        sonarqubeStaticAnalysis('sonar') {
-//            sh "mvn sonar:sonar -Dsonar.analysis.scmRevision=${env.CHANGE_ID} -Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} -Dsonar.login=admin -Dsonar.password=admin -q"
-//        }
-//      }
-//    }
 
     // Build Container Image using the artifacts produced in previous stages
     stage('Build Container Image'){
