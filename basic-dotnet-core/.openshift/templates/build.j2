@@ -1,14 +1,13 @@
 apiVersion: v1
 kind: Template
 labels:
-  template: generic-java-jenkins-pipeline
+  template: generic-dotnet-jenkins-pipeline
 metadata:
   annotations:
-    description: Application template for JWS applications built using a Jenkins Pipeline
+    description: Application template for .NET Core applications built using a Jenkins Pipeline
     iconClass: icon-tomcat
-    tags: tomcat,tomcat8,java,jboss,xpaas,jenkins-ci
     version: 1.2.0
-  name: generic-java-jenkins-pipeline
+  name: generic-dotnet-jenkins-pipeline
 objects:
 - apiVersion: v1
   kind: ImageStream
@@ -67,11 +66,51 @@ objects:
           name: ${IMAGE_STREAM_TAG_NAME}
           namespace: ${IMAGE_STREAM_NAMESPACE}
       type: Source
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: dotnet-jenkins-slave-22
+    labels:
+      role: jenkins-slave
+    namespace: ${NAMESPACE}
+  data:
+    dotnet22: |-
+      <org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
+        <inheritFrom></inheritFrom>
+        <name>dotnet-22</name>
+        <instanceCap>10</instanceCap>
+        <idleMinutes>0</idleMinutes>
+        <label>dotnet-22</label>
+        <serviceAccount>jenkins</serviceAccount>
+        <nodeSelector></nodeSelector>
+        <volumes/>
+        <containers>
+          <org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+            <name>jnlp</name>
+            <image>registry.access.redhat.com/dotnet/dotnet-22-jenkins-slave-rhel7:latest</image>
+            <privileged>false</privileged>
+            <alwaysPullImage>true</alwaysPullImage>
+            <workingDir>/tmp</workingDir>
+            <command></command>
+            <args>${computer.jnlpmac} ${computer.name}</args>
+            <ttyEnabled>false</ttyEnabled>
+            <resourceRequestCpu></resourceRequestCpu>
+            <resourceRequestMemory></resourceRequestMemory>
+            <resourceLimitCpu></resourceLimitCpu>
+            <resourceLimitMemory></resourceLimitMemory>
+            <envVars/>
+          </org.csanchez.jenkins.plugins.kubernetes.ContainerTemplate>
+        </containers>
+        <envVars/>
+        <annotations/>
+        <imagePullSecrets/>
+        <nodeProperties/>
+      </org.csanchez.jenkins.plugins.kubernetes.PodTemplate>
 parameters:
 - description: The name for the application.
   name: APPLICATION_NAME
   required: true
-  value: basic-spring
+  value: {{ sb_application_name }}
 - description: The namespace to deploy into
   name: NAMESPACE
   required: true
@@ -84,11 +123,11 @@ parameters:
   value: "master"
 - description: Path within Git project to build; empty for root project directory.
   name: CONTEXT_DIR
-  value: basic-spring-boot
+  value: {{ sb_application_name }}
 - description: Source code repo for demo app
   name: APPLICATION_SOURCE_REPO
   required: true
-  value: https://github.com/redhat-cop/spring-rest.git
+  value: {{ sb_application_repository_url }}
 - description: Source code branch for demo app
   name: APPLICATION_SOURCE_REF
   value: master
@@ -115,4 +154,4 @@ parameters:
 - description: Image stream tag for the image you'd like to use to build the application
   name: IMAGE_STREAM_TAG_NAME
   required: true
-  value: redhat-openjdk18-openshift:1.1
+  value: dotnet-runtime:2.2
