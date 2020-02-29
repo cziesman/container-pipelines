@@ -20,12 +20,12 @@ sb_src_registry: "docker://docker-registry.default.svc.cluster.local:5000"
 sb_dest_registry: "docker://10.128.88.25"
 sb_src_project: "basic-spring-boot-image"
 sb_dest_project: "productionpipeline"
-sb_mvn_snapshot_deployment_repository: "nexus::default::http://nexus-ci-cd.192.168.64.2.nip.io/repository/maven-snapshots/"
-sb_mvn_release_deployment_repository: "nexus::default::http://nexus-ci-cd.192.168.64.2.nip.io/repository/maven-releases/"
-sb_sonar_host: http://sonarqube-ci-cd.192.168.64.2.nip.io/
+sb_mvn_snapshot_deployment_repository: "nexus::default::http://nexus-ci-cd.192.168.64.3.nip.io/repository/maven-snapshots/"
+sb_mvn_release_deployment_repository: "nexus::default::http://nexus-ci-cd.192.168.64.3.nip.io/repository/maven-releases/"
+sb_sonar_host: http://sonarqube-ci-cd.192.168.64.3.nip.io/
 sb_sonar_username: admin
 sb_sonar_password: admin
-sb_sonar_token: "17f57460ac217710936f3f961745eb0b8c1bf129"
+sb_sonar_token: "6ae6b7088542434b5cdc156ba05b27f189c42962"
 
 openshift_cluster_content:
 - object: projects
