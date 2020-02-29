@@ -25,7 +25,7 @@ sb_mvn_release_deployment_repository: "nexus::default::https://nexus-secure-spri
 sb_sonar_host: https://sonarqube-secure-spring-boot-ci-cd.apps.shared.na.openshift.opentlc.com
 sb_sonar_username: admin
 sb_sonar_password: admin
-sb_token: "5f31fe96bcc31c33314f8f5086d2077fe6c368eb"
+sb_sonar_token: "5f31fe96bcc31c33314f8f5086d2077fe6c368eb"
 
 openshift_cluster_content:
 - object: projects
