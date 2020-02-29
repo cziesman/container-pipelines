@@ -20,8 +20,8 @@ sb_src_registry: "docker://docker-registry.default.svc.cluster.local:5000"
 sb_dest_registry: "docker://10.128.88.25"
 sb_src_project: "basic-spring-boot-image"
 sb_dest_project: "productionpipeline"
-sb_mvn_snapshot_deployment_repository: "nexus::default::https://jenkins-cableone-ci-cd.apps.uat.corp.cableone.net/repository/maven-snapshots"
-sb_mvn_release_deployment_repository: "nexus::default::https://jenkins-cableone-ci-cd.apps.uat.corp.cableone.net/repository/maven-releases"
+sb_mvn_snapshot_deployment_repository: "nexus::default::https://nexus-secure-spring-boot-ci-cd.apps.shared.na.openshift.opentlc.com/repository/maven-snapshots/"
+sb_mvn_release_deployment_repository: "nexus::default::https://nexus-secure-spring-boot-ci-cd.apps.shared.na.openshift.opentlc.com/repository/maven-releases/"
 sb_sonar_host: https://sonarqube-secure-spring-boot-ci-cd.apps.shared.na.openshift.opentlc.com
 sb_sonar_username: admin
 sb_sonar_password: admin
