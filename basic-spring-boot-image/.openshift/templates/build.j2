@@ -59,6 +59,10 @@ objects:
           value: "${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY}"
         - name: "MVN_RELEASE_DEPLOYMENT_REPOSITORY"
           value: "${MVN_RELEASE_DEPLOYMENT_REPOSITORY}"
+        - name: "SONAR_HOST_URL"
+          value: "${SONAR_HOST_URL}"
+        - name: "SONAR_TOKEN"
+          value: "${SONAR_TOKEN}"
 - apiVersion: v1
   kind: BuildConfig
   metadata:
@@ -158,3 +162,11 @@ parameters:
   required: true
   name: MVN_RELEASE_DEPLOYMENT_REPOSITORY
   value: {{ sb_mvn_release_deployment_repository }}
+- description: URL of the SONAR host
+  required: true
+  name: SONAR_HOST_URL
+  value: {{ sb_sonar_host }}
+- description: Auth token for SONAR
+  required: true
+  name: SONAR_TOKEN
+  value: {{ sb_sonar_token }}
