@@ -21,6 +21,10 @@ openshift.withCluster() {
   env.DEST_PROJECT = "${DEST_PROJECT}"
   env.MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY = "${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY}"
   env.MVN_RELEASE_DEPLOYMENT_REPOSITORY = "${MVN_RELEASE_DEPLOYMENT_REPOSITORY}"
+  env.SONAR_HOST_URL = "${SONAR_HOST_URL}"
+  env.SONAR_USERNAME = "${SONAR_USERNAME}"
+  env.SONAR_PASSWORD = "${SONAR_PASSWORD}"
+  env.SONAR_TOKEN = "${SONAR_TOKEN}"
 
 }
 
@@ -81,10 +85,13 @@ pipeline {
     // Perform Static Code Analysis using SonarQube
     stage ('Code Analysis') {
       steps {
-        sonarqubeStaticAnalysis(
-          pomFile: "${POM_FILE}",
-          buildServerWebHookName: "jenkins"
-        )
+        withSonarQubeEnv('sonar') {
+          try {
+            sh "mvn sonar:sonar -f "${env.POM_FILE}" -Dsonar.analysis.scmRevision=${env.CHANGE_ID} -Dsonar.host.url=${env.SONAR_HOST_URL} -Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} -Dsonar.login=${env.SONAR_TOKEN} -q"
+          } catch (error) {
+            error error.getMessage()
+          }
+        } 
       }
     }
 
