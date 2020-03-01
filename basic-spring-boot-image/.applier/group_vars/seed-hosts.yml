@@ -7,7 +7,7 @@ sb_stage_application_display_name: Spring Rest App - Stage
 sb_stage_namespace: basic-spring-boot-image-stage
 sb_prod_application_display_name: Spring Rest App - Prod
 sb_prod_namespace: basic-spring-boot-image-prod
-sb_application_repository_url: "https://github.com/redhat-cop/spring-rest.git"
+sb_application_repository_url: "https://github.com/cziesman/spring-rest.git"
 sb_application_repository_ref: master
 sb_application_readiness_response: "status.:.UP"
 sb_application_readiness_path: "/health"

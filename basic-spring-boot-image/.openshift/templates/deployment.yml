@@ -89,6 +89,13 @@ objects:
               - -c
               - curl -s 'http://localhost:8080${READINESS_PATH}'
                 |grep -iq '${READINESS_RESPONSE}'
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1536Mi
         terminationGracePeriodSeconds: 60
     triggers:
     - imageChangeParams:

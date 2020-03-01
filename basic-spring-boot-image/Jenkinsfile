@@ -22,9 +22,8 @@ openshift.withCluster() {
   env.MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY = "${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY}"
   env.MVN_RELEASE_DEPLOYMENT_REPOSITORY = "${MVN_RELEASE_DEPLOYMENT_REPOSITORY}"
   env.SONAR_HOST_URL = "${SONAR_HOST_URL}"
-  env.SONAR_USERNAME = "${SONAR_USERNAME}"
-  env.SONAR_PASSWORD = "${SONAR_PASSWORD}"
   env.SONAR_TOKEN = "${SONAR_TOKEN}"
+  env.SETTINGS_FILE_ID = "67a95cf7-7fc4-49a5-bd42-0e5a351421a4"
 
 }
 
@@ -58,7 +57,9 @@ pipeline {
       steps {
 
         // run build
-        sh "mvn -B clean deploy -f ${POM_FILE} -DaltDeploymentRepository=${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY}"
+        configFileProvider([configFile(fileId: ${SETTINGS_FILE_ID}, variable: 'MAVEN_SETTINGS_XML')]) {
+           sh "mvn -B clean deploy -f ${POM_FILE} -DaltDeploymentRepository=${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY} -s $MAVEN_SETTINGS_XML"
+        }
 
         // publish unit test report
         publishHTML(target: [
@@ -69,16 +70,6 @@ pipeline {
           alwaysLinkToLastBuild: false,
           allowMissing         : true
         ])
-
-        // publish dependency check report
-        publishHTML(target: [
-          reportDir            : "${env.BUILD_OUTPUT_DIR}",
-          reportFiles          : 'dependency-check-report.html',
-          reportName           : 'OWASP Dependency Check Report',
-          keepAll              : true,
-          alwaysLinkToLastBuild: true,
-          allowMissing         : false
-        ])
       }
     }
 
@@ -86,12 +77,8 @@ pipeline {
     stage ('Code Analysis') {
       steps {
         withSonarQubeEnv('sonar') {
-          try {
-            sh "mvn sonar:sonar -f "${env.POM_FILE}" -Dsonar.analysis.scmRevision=${env.CHANGE_ID} -Dsonar.host.url=${env.SONAR_HOST_URL} -Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} -Dsonar.login=${env.SONAR_TOKEN} -q"
-          } catch (error) {
-            error error.getMessage()
-          }
-        } 
+            sh "mvn sonar:sonar -f ${env.POM_FILE} -Dsonar.analysis.scmRevision=${env.CHANGE_ID} -Dsonar.host.url=${env.SONAR_HOST_URL} -Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} -Dsonar.login=${env.SONAR_TOKEN} -q"
+        }
       }
     }
 
