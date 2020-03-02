@@ -14,6 +14,7 @@ openshift.withCluster() {
   env.BUILD = "${env.NAMESPACE}"
   env.DEV = "${APP_NAME}-dev"
   env.STAGE = "${APP_NAME}-stage"
+  env.SRC_CREDENTIALS = "openshift:\$(oc whoami -t)"
   env.DEST_CREDENTIALS = "${DEST_CREDENTIALS}"
   env.SRC_REGISTRY = "${SRC_REGISTRY}"
   env.DEST_REGISTRY = "${DEST_REGISTRY}"
@@ -22,10 +23,9 @@ openshift.withCluster() {
   env.MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY = "${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY}"
   env.MVN_RELEASE_DEPLOYMENT_REPOSITORY = "${MVN_RELEASE_DEPLOYMENT_REPOSITORY}"
   env.SONAR_HOST_URL = "${SONAR_HOST_URL}"
-  env.SONAR_TOKEN = "${SONAR_TOKEN}"
-  env.SETTINGS_FILE_ID = "67a95cf7-7fc4-49a5-bd42-0e5a351421a4"
-
-}
+  env.SONAR_LOGIN = "${SONAR_LOGIN}"
+  env.SONAR_PASSWORD = "${SONAR_PASSWORD}"
+  env.SETTINGS_FILE_ID = "nexus_credentials_file"
 
 pipeline {
   // Use Jenkins Maven slave
@@ -57,8 +57,15 @@ pipeline {
       steps {
 
         // run build
-        configFileProvider([configFile(fileId: ${SETTINGS_FILE_ID}, variable: 'MAVEN_SETTINGS_XML')]) {
-           sh "mvn -B clean deploy -f ${POM_FILE} -DaltDeploymentRepository=${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY} -s $MAVEN_SETTINGS_XML"
+        script {
+          try {
+            configFileProvider([configFile(fileId: env.SETTINGS_FILE_ID, variable: 'MAVEN_SETTINGS_XML')]) {
+              sh "mvn -B clean deploy -f ${POM_FILE} -DaltDeploymentRepository=${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY} -s $MAVEN_SETTINGS_XML"
+            }
+          } catch (err) {
+              echo err.getMessage()
+              throw err
+          }
         }
 
         // publish unit test report
@@ -76,8 +83,15 @@ pipeline {
     // Perform Static Code Analysis using SonarQube
     stage ('Code Analysis') {
       steps {
-        withSonarQubeEnv('sonar') {
-            sh "mvn sonar:sonar -f ${env.POM_FILE} -Dsonar.analysis.scmRevision=${env.CHANGE_ID} -Dsonar.host.url=${env.SONAR_HOST_URL} -Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} -Dsonar.login=${env.SONAR_TOKEN} -q"
+        script {
+          try {
+            withSonarQubeEnv('sonar') {
+              sh "mvn sonar:sonar -Dsonar.analysis.scmRevision=${env.CHANGE_ID} -Dsonar.analysis.buildNumber=${env.BUILD_NUMBER} -Dsonar.login=admin -Dsonar.password=admin -q"
+            }
+          } catch (err) {
+              echo err.getMessage()
+              throw err
+          }
         }
       }
     }
@@ -135,11 +149,29 @@ pipeline {
     }
 
     stage('Copy Image to External Registry') {
-    steps {
-        echo "Copy image to External Registry"
-        sh "skopeo copy --src-tls-verify=false --dest-tls-verify=false --src-creds openshift:\$(oc whoami -t) --dest-creds ${DEST_CREDENTIALS} ${SRC_REGISTRY}/${SRC_PROJECT}/${APP_NAME}:latest ${DEST_REGISTRY}/${DEST_PROJECT}/${APP_NAME}:latest"
+	  steps {
+        script {
+          try {
+    	    withDockerRegistry([credentialsId: "docker-secret", url: "${env.SRC_REGISTRY}"]) {
+              withDockerRegistry([credentialsId: "${env.DEST_CREDENTIALS}", url: "${env.DEST_REGISTRY}"]) {
+                sh """
+                  oc image mirror ${env.SRC_REGISTRY}/${env.SRC_PROJECT}/${env.APP_NAME}:latest ${env.DEST_REGISTRY}/${env.DEST_PROJECT}/${env.APP_NAME}:latest
+                """
+              }
+            }
+          } catch (err) {
+              echo err.getMessage()
+              throw err
+          }
         }
+      }
     }
 
+//            stage('Copy Image to External Registry') {
+//              steps {
+//                echo "Copy image to External Registry"
+//                sh "skopeo copy --src-tls-verify=false --dest-tls-verify=false --src-creds openshift:\$(oc whoami -t) --dest-creds ${DEST_CREDENTIALS} ${SRC_REGISTRY}/${SRC_PROJECT}/${APP_NAME}:latest ${DEST_REGISTRY}/${DEST_PROJECT}/${APP_NAME}:latest"
+//              }
+//            }
   }
 }

@@ -59,10 +59,16 @@ objects:
           value: "${MVN_SNAPSHOT_DEPLOYMENT_REPOSITORY}"
         - name: "MVN_RELEASE_DEPLOYMENT_REPOSITORY"
           value: "${MVN_RELEASE_DEPLOYMENT_REPOSITORY}"
+        - name: SRC_API_URL
+          value: ${SRC_API_URL}
+        - name: DEST_API_URL
+          value: ${DEST_API_URL}
         - name: "SONAR_HOST_URL"
           value: "${SONAR_HOST_URL}"
-        - name: "SONAR_TOKEN"
-          value: "${SONAR_TOKEN}"
+        - name: "SONAR_LOGIN"
+          value: "${SONAR_LOGIN}"
+        - name: "SONAR_PASSWORD"
+          value: "${SONAR_PASSWORD}"
 - apiVersion: v1
   kind: BuildConfig
   metadata:
@@ -162,11 +168,21 @@ parameters:
   required: true
   name: MVN_RELEASE_DEPLOYMENT_REPOSITORY
   value: {{ sb_mvn_release_deployment_repository }}
+- description: The source docker registry used for the docker registry url
+  name: SRC_API_URL
+  required: true
+- description: The destination docker registry used for the docker registry url
+  name: DEST_API_URL
+  required: true
 - description: URL of the SONAR host
   required: true
   name: SONAR_HOST_URL
   value: {{ sb_sonar_host }}
-- description: Auth token for SONAR
+- description: Login for SONAR
   required: true
-  name: SONAR_TOKEN
-  value: {{ sb_sonar_token }}
+  name: SONAR_LOGIN
+  value: {{ sb_sonar_login }}
+- description: Password for SONAR
+  required: true
+  name: SONAR_PASSWORD
+  value: {{ sb_sonar_password }}

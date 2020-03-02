@@ -20,12 +20,13 @@ sb_src_registry: "docker://docker-registry.default.svc.cluster.local:5000"
 sb_dest_registry: "docker://10.128.88.25"
 sb_src_project: "basic-spring-boot-image"
 sb_dest_project: "productionpipeline"
+sb_src_api_url: "https://master.na311.openshift.opentlc.com"
+sb_dest_api_url: "quay.io"
 sb_mvn_snapshot_deployment_repository: "nexus::default::http://nexus-ci-cd.192.168.64.3.nip.io/repository/maven-snapshots/"
 sb_mvn_release_deployment_repository: "nexus::default::http://nexus-ci-cd.192.168.64.3.nip.io/repository/maven-releases/"
 sb_sonar_host: http://sonarqube-ci-cd.192.168.64.3.nip.io/
 sb_sonar_username: admin
 sb_sonar_password: admin
-sb_sonar_token: "6ae6b7088542434b5cdc156ba05b27f189c42962"
 
 openshift_cluster_content:
 - object: projects
@@ -57,7 +58,6 @@ openshift_cluster_content:
       SONAR_HOST_URL: "{{ sb_sonar_host }}"
       SONAR_USERNAME: "{{ sb_sonar_username }}"
       SONAR_PASSWORD: "{{ sb_sonar_password }}"
-      SONAR_TOKEN: "{{ sb_sonar_token }}"
     tags:
       - build
 - object: deployments
